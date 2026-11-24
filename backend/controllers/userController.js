@@ -1,5 +1,6 @@
 const User = require("../models/userTable");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const signup = async (req, res) => {
   try {
@@ -50,7 +51,10 @@ const login = async (req, res) => {
       }
 
       if (result) {
-        return res.status(200).json({ message: "User login successful" });
+        return res.status(200).json({
+          message: "User login successful",
+          token: generateAccessToken(user.id),
+        });
       } else {
         return res.status(401).json({ message: "User not authorized" });
       }
@@ -60,7 +64,12 @@ const login = async (req, res) => {
   }
 };
 
+const generateAccessToken = (id) => {
+  return jwt.sign({ userId: id }, "secretkey");
+};
+
 module.exports = {
   signup,
   login,
+  generateAccessToken,
 };

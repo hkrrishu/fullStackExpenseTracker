@@ -9,6 +9,7 @@ const addExpense = (req, res) => {
     expenseamount: expenseamount,
     description: description,
     category: category,
+    userId: req.user.id,
   })
     .then((expense) => {
       res.status(201).json({ expense, success: true });
@@ -19,7 +20,11 @@ const addExpense = (req, res) => {
 };
 
 const getExpenses = (req, res) => {
-  Expense.findAll()
+  Expense.findAll({
+    where: {
+      userId: req.user.id,
+    },
+  })
     .then((expenses) => {
       res.status(200).json({ expenses, success: true });
     })
@@ -31,7 +36,11 @@ const getExpenses = (req, res) => {
 const deleteExpense = (req, res) => {
   const id = req.params.id;
 
-  Expense.destroy({ where: { id: id } })
+  Expense.destroy({ 
+    where: { 
+        id: id,
+        userId: req.user.id
+     } })
     .then(() => {
       res
         .status(200)

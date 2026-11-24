@@ -13,6 +13,8 @@ async function login(e) {
         );
 
         alert(response.data.message);
+        localStorage.setItem('token', response.data.token);
+        window.location.href = '../Expense/expense.html';
 
     } catch (err) {
         document.body.innerHTML +=

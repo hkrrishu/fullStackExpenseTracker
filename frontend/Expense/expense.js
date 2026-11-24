@@ -14,7 +14,11 @@ expenseForm.addEventListener("submit", (event) => {
   };
 
   axios
-    .post("http://localhost:3000/expense/addexpense", expenseDetails)
+    .post("http://localhost:3000/expense/addexpense", expenseDetails, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    })
     .then((response) => {
       console.log(response);
       alert("Expense added successfully!");
@@ -28,10 +32,14 @@ expenseForm.addEventListener("submit", (event) => {
 
 function getExpenses() {
   axios
-    .get("http://localhost:3000/expense/getexpenses")
+    .get("http://localhost:3000/expense/getexpenses", {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    })
     .then((response) => {
       const expenseList = document.getElementById("expenseList");
-      expenseList.innerHTML = '';
+      expenseList.innerHTML = "";
 
       response.data.expenses.forEach((expense) => {
         const li = document.createElement("li");
@@ -44,7 +52,14 @@ function getExpenses() {
         li.appendChild(deleteBtn);
         deleteBtn.addEventListener("click", () => {
           axios
-            .delete(`http://localhost:3000/expense/deleteexpense/${expense.id}`)
+            .delete(
+              `http://localhost:3000/expense/deleteexpense/${expense.id}`,
+              {
+                headers: {
+                  Authorization: localStorage.getItem("token"),
+                },
+              },
+            )
             .then((response) => {
               getExpenses();
             })
