@@ -1,8 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const Expense = require('./models/expenseTable');
 const User = require('./models/userTable');
 const expenseRoutes = require('./routes/expenseRoute');
+const Order = require('./models/orderTable');
+const purchaseRoutes = require('./routes/purchaseRoute');
 
 const app = express();
 
@@ -14,14 +17,18 @@ app.use(express.json());
 
 app.use('/user', userRoutes);
 app.use('/expense', expenseRoutes);
+app.use('/purchase', purchaseRoutes);
+
 
 User.hasMany(Expense);
 Expense.belongsTo(User);
+User.hasMany(Order);
+Order.belongsTo(User);
 
 sequelize
-    .sync()
+    .sync({ alter: true })
     .then(() => {
-        app.listen(3000, () => {
+        app.listen(process.env.PORT || 3000, () => {
             console.log('Server is running on port 3000');
         });
     })
