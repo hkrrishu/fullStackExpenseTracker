@@ -124,7 +124,11 @@ buyPremiumBtn.addEventListener("click", async () => {
 
     // Step 4: Show result
     if (verifyResponse.data.paymentStatus === "SUCCESSFUL") {
-      alert("Transaction successful! You are now a Premium Member.");
+      localStorage.setItem("token", verifyResponse.data.token);
+
+      showPremiumUserMessage();
+
+      alert("You are a Premium User Now");
     } else if (verifyResponse.data.paymentStatus === "FAILED") {
       alert("TRANSACTION FAILED");
     } else {
@@ -133,5 +137,59 @@ buyPremiumBtn.addEventListener("click", async () => {
   } catch (err) {
     console.log(err);
     alert("Something went wrong during payment.");
+  }
+});
+const premiumMessage = document.getElementById("premiumMessage");
+
+function showPremiumUserMessage() {
+  premiumMessage.style.display = "block";
+  buyPremiumBtn.style.display = "none";
+}
+
+const token = localStorage.getItem("token");
+
+if (token) {
+  const decodedToken = JSON.parse(atob(token.split(".")[1]));
+
+  if (decodedToken.ispremiumuser) {
+    showPremiumUserMessage();
+  }
+}
+
+const leaderboardSection = document.getElementById("leaderboardSection");
+const showLeaderboardBtn = document.getElementById("showLeaderboardBtn");
+const leaderboardList = document.getElementById("leaderboardList");
+
+// Show leaderboard section for premium users
+function showPremiumUserMessage() {
+  premiumMessage.style.display = "block";
+  buyPremiumBtn.style.display = "none";
+  leaderboardSection.style.display = "block";
+}
+
+// Fetch leaderboard data
+showLeaderboardBtn.addEventListener("click", async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:3000/premium/showLeaderBoard",
+      {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      },
+    );
+
+    leaderboardList.innerHTML = "";
+
+    response.data.forEach((user, index) => {
+      const li = document.createElement("li");
+
+      li.textContent = `${index + 1}. ${user.name} - Total Expense: ${user.total_cost || 0}`;
+
+      leaderboardList.appendChild(li);
+    });
+  } catch (err) {
+    console.log(err);
+    alert("Unable to fetch leaderboard");
   }
 });

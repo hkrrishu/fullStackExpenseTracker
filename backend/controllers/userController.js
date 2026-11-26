@@ -53,7 +53,7 @@ const login = async (req, res) => {
       if (result) {
         return res.status(200).json({
           message: "User login successful",
-          token: generateAccessToken(user.id),
+          token: generateAccessToken(user.id, user.ispremiumuser),
         });
       } else {
         return res.status(401).json({ message: "User not authorized" });
@@ -65,8 +65,8 @@ const login = async (req, res) => {
   }
 };
 
-const generateAccessToken = (id) => {
-  return jwt.sign({ userId: id }, "secretkey");
+const generateAccessToken = (id, ispremiumuser) => {
+  return jwt.sign({ userId: id, ispremiumuser: ispremiumuser }, "secretkey");
 };
 
 module.exports = {
