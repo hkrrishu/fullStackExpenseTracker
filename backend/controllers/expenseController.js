@@ -4,9 +4,11 @@ const sequelize = require("../util/database");
 const { suggestCategory } = require("../services/geminiService");
 
 const addExpense = async (req, res) => {
-  const transaction = await sequelize.transaction();
+  let transaction;
 
   try {
+    transaction = await sequelize.transaction();
+
     const expenseamount = Number(req.body.expenseamount);
     const description = req.body.description;
 
@@ -35,30 +37,36 @@ const addExpense = async (req, res) => {
 
     res.status(201).json({ expense, success: true });
   } catch (err) {
-    await transaction.rollback();
+    if (transaction && !transaction.finished) {
+      await transaction.rollback();
+    }
+
     console.log(err);
     res.status(500).json({ success: false, error: err.message });
   }
 };
 
-const getExpenses = (req, res) => {
-  Expense.findAll({
-    where: {
-      userId: req.user.id,
-    },
-  })
-    .then((expenses) => {
-      res.status(200).json({ expenses, success: true });
-    })
-    .catch((err) => {
-      res.status(500).json({ error: err, success: false });
+const getExpenses = async (req, res) => {
+  try {
+    const expenses = await Expense.findAll({
+      where: {
+        userId: req.user.id,
+      },
     });
+
+    res.status(200).json({ expenses, success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err, success: false });
+  }
 };
 
 const deleteExpense = async (req, res) => {
-  const transaction = await sequelize.transaction();
+  let transaction;
 
   try {
+    transaction = await sequelize.transaction();
+
     const id = req.params.id;
 
     const expense = await Expense.findOne({
@@ -71,6 +79,7 @@ const deleteExpense = async (req, res) => {
 
     if (!expense) {
       await transaction.rollback();
+
       return res.status(404).json({
         success: false,
         message: "Expense not found",
@@ -94,9 +103,16 @@ const deleteExpense = async (req, res) => {
       message: "Expense deleted successfully",
     });
   } catch (err) {
-    await transaction.rollback();
+    if (transaction && !transaction.finished) {
+      await transaction.rollback();
+    }
+
     console.log(err);
-    res.status(500).json({ success: false, error: err.message });
+
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 };
 
