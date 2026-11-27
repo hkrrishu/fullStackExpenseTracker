@@ -21,3 +21,24 @@ async function login(e) {
             `<div style="color:red;">${err.response.data.message}</div>`;
     }
 }
+
+function showForgotPassword() {
+    document.getElementById("forgotPasswordForm").style.display = "block";
+}
+
+async function forgotPassword(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("forgotEmail").value;
+
+    try {
+        const response = await axios.post(
+            "http://localhost:3000/user/password/forgotpassword",
+            { email: email }
+        );
+
+        alert(response.data.message);
+    } catch (err) {
+        alert(err.response?.data?.message || "Something went wrong");
+    }
+}

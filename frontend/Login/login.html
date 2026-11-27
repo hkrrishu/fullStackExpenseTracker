@@ -16,6 +16,20 @@
         <button>Login</button>
     </form>
 
+    <button type="button" onclick="showForgotPassword()">
+    Forgot Password?
+</button>
+
+<form id="forgotPasswordForm" onsubmit="forgotPassword(event)" style="display: none;">
+    <input
+        type="email"
+        id="forgotEmail"
+        placeholder="Enter your registered email"
+        required
+    >
+    <button type="submit">Send Email</button>
+</form>
+
     <a href="../Signup/signup.html">New User - Signup Now</a>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
