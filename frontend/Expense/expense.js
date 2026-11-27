@@ -140,10 +140,14 @@ buyPremiumBtn.addEventListener("click", async () => {
   }
 });
 const premiumMessage = document.getElementById("premiumMessage");
+const leaderboardSection = document.getElementById("leaderboardSection");
+const showLeaderboardBtn = document.getElementById("showLeaderboardBtn");
+const leaderboardList = document.getElementById("leaderboardList");
 
 function showPremiumUserMessage() {
   premiumMessage.style.display = "block";
   buyPremiumBtn.style.display = "none";
+  leaderboardSection.style.display = "block";
 }
 
 const token = localStorage.getItem("token");
@@ -156,18 +160,6 @@ if (token) {
   }
 }
 
-const leaderboardSection = document.getElementById("leaderboardSection");
-const showLeaderboardBtn = document.getElementById("showLeaderboardBtn");
-const leaderboardList = document.getElementById("leaderboardList");
-
-// Show leaderboard section for premium users
-function showPremiumUserMessage() {
-  premiumMessage.style.display = "block";
-  buyPremiumBtn.style.display = "none";
-  leaderboardSection.style.display = "block";
-}
-
-// Fetch leaderboard data
 showLeaderboardBtn.addEventListener("click", async () => {
   try {
     const response = await axios.get(
