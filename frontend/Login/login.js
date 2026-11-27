@@ -1,44 +1,42 @@
 async function login(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const loginDetails = {
-        email: e.target.email.value,
-        password: e.target.password.value
-    };
+  const loginDetails = {
+    email: e.target.email.value,
+    password: e.target.password.value,
+  };
 
-    try {
-        const response = await axios.post(
-            'http://localhost:3000/user/login',
-            loginDetails
-        );
+  try {
+    const response = await axios.post(
+      "http://localhost:3000/user/login",
+      loginDetails,
+    );
 
-        alert(response.data.message);
-        localStorage.setItem('token', response.data.token);
-        window.location.href = '../Expense/expense.html';
-
-    } catch (err) {
-        document.body.innerHTML +=
-            `<div style="color:red;">${err.response.data.message}</div>`;
-    }
+    alert(response.data.message);
+    localStorage.setItem("token", response.data.token);
+    window.location.href = "../Expense/expense.html";
+  } catch (err) {
+    document.body.innerHTML += `<div style="color:red;">${err.response.data.message}</div>`;
+  }
 }
 
 function showForgotPassword() {
-    document.getElementById("forgotPasswordForm").style.display = "block";
+  document.getElementById("forgotPasswordForm").style.display = "block";
 }
 
 async function forgotPassword(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const email = document.getElementById("forgotEmail").value;
+  const email = document.getElementById("forgotEmail").value;
 
-    try {
-        const response = await axios.post(
-            "http://localhost:3000/user/password/forgotpassword",
-            { email: email }
-        );
+  try {
+    const response = await axios.post(
+      "http://localhost:3000/user/password/forgotpassword",
+      { email: email },
+    );
 
-        alert(response.data.message);
-    } catch (err) {
-        alert(err.response?.data?.message || "Something went wrong");
-    }
+    alert(response.data.message);
+  } catch (err) {
+    alert(err.response?.data?.message || "Something went wrong");
+  }
 }

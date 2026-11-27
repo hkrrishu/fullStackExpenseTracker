@@ -8,7 +8,7 @@ expenseForm.addEventListener("submit", (event) => {
 
   const expenseDetails = {
     expenseamount,
-    description
+    description,
   };
 
   axios

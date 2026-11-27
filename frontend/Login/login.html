@@ -1,39 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Login</title>
-</head>
-<body>
-
+  </head>
+  <body>
     <form onsubmit="login(event)">
-        <label for="email">Enter your email:</label>
-        <input type="email" name="email" required>
+      <label for="email">Enter your email:</label>
+      <input type="email" name="email" required />
 
-        <label for="password">Enter password:</label>
-        <input type="password" name="password" required>
+      <label for="password">Enter password:</label>
+      <input type="password" name="password" required />
 
-        <button>Login</button>
+      <button>Login</button>
     </form>
 
     <button type="button" onclick="showForgotPassword()">
-    Forgot Password?
-</button>
+      Forgot Password?
+    </button>
 
-<form id="forgotPasswordForm" onsubmit="forgotPassword(event)" style="display: none;">
-    <input
+    <form
+      id="forgotPasswordForm"
+      onsubmit="forgotPassword(event)"
+      style="display: none"
+    >
+      <input
         type="email"
         id="forgotEmail"
         placeholder="Enter your registered email"
         required
-    >
-    <button type="submit">Send Email</button>
-</form>
+      />
+      <button type="submit">Send Email</button>
+    </form>
 
     <a href="../Signup/signup.html">New User - Signup Now</a>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="./login.js"></script>
-
-</body>
+  </body>
 </html>

@@ -1,7 +1,6 @@
-
 let brevoClient;
 
-const sendEmail = async (toEmail) => {
+const sendEmail = async (toEmail, resetLink) => {
   try {
     if (!brevoClient) {
       const { BrevoClient } = await import("@getbrevo/brevo");
@@ -12,8 +11,8 @@ const sendEmail = async (toEmail) => {
     }
 
     const response = await brevoClient.transactionalEmails.sendTransacEmail({
-      subject: "Password Reset Request",
-      textContent: "This is a test email from Expense Tracker. You requested a password reset.",
+      subject: "Reset Your Expense Tracker Password",
+      textContent: `Click this link to reset your password 🥳: ${resetLink}`,
       sender: {
         name: "Expense Tracker",
         email: process.env.BREVO_SENDER_EMAIL,

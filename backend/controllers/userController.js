@@ -70,14 +70,15 @@ const generateAccessToken = (id, ispremiumuser) => {
   return jwt.sign({ userId: id, ispremiumuser: ispremiumuser }, "secretkey");
 };
 
+const { v4: uuidv4 } = require("uuid");
+const ForgotPasswordRequest = require("../models/forgotPasswordRequest");
+
 const forgotPassword = async (req, res) => {
   try {
     const email = req.body.email;
 
     const user = await User.findOne({
-      where: {
-        email: email,
-      },
+      where: { email: email },
     });
 
     if (!user) {
@@ -86,16 +87,133 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    await sendEmail(email);
+    const id = uuidv4();
+
+    await ForgotPasswordRequest.create({
+      id: id,
+      userId: user.id,
+    });
+
+    const resetLink = `http://localhost:3000/user/password/resetpassword/${id}`;
+
+    await sendEmail(email, resetLink);
 
     res.status(200).json({
-      message: "Email sent successfully",
+      message: "Password reset link sent successfully",
     });
   } catch (err) {
     console.log(err);
 
     res.status(500).json({
-      message: "Failed to send email",
+      message: "Failed to send reset link",
+    });
+  }
+};
+
+const resetPasswordPage = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const request = await ForgotPasswordRequest.findOne({
+      where: {
+        id: id,
+        isactive: true,
+      },
+    });
+
+    if (!request) {
+      return res.send("<h2>❌ Invalid or expired password reset link</h2>");
+    }
+
+    res.send(`
+            <form id="resetForm">
+    <input
+        type="password"
+        id="password"
+        placeholder="Enter new password"
+        required
+    >
+
+    <button type="submit">Update Password 🚀</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+    const form = document.getElementById("resetForm");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const password = document.getElementById("password").value;
+
+        const id = window.location.pathname.split("/").pop();
+
+        try {
+            const response = await fetch("/user/password/updatepassword", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: id,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            document.getElementById("message").innerText = data.message;
+
+        } catch (err) {
+            document.getElementById("message").innerText =
+                "Something went wrong";
+        }
+    });
+</script>`);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong");
+  }
+};
+
+const updatePassword = async (req, res) => {
+  try {
+    const id = req.body.id;
+    const newPassword = req.body.password;
+
+    const request = await ForgotPasswordRequest.findOne({
+      where: {
+        id: id,
+        isactive: true,
+      },
+    });
+
+    if (!request) {
+      return res.status(400).json({
+        message: "Invalid or expired link",
+      });
+    }
+
+    const user = await User.findByPk(request.userId);
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await user.update({
+      password: hashedPassword,
+    });
+
+    await request.update({
+      isactive: false,
+    });
+
+    res.status(200).json({
+      message: "Password updated successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Something went wrong",
     });
   }
 };
@@ -105,4 +223,6 @@ module.exports = {
   login,
   generateAccessToken,
   forgotPassword,
+  resetPasswordPage,
+  updatePassword,
 };
