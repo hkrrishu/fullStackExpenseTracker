@@ -1,6 +1,7 @@
 const User = require("../models/userTable");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../services/emailService");
 
 const signup = async (req, res) => {
   try {
@@ -69,8 +70,39 @@ const generateAccessToken = (id, ispremiumuser) => {
   return jwt.sign({ userId: id, ispremiumuser: ispremiumuser }, "secretkey");
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const email = req.body.email;
+
+    const user = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    await sendEmail(email);
+
+    res.status(200).json({
+      message: "Email sent successfully",
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      message: "Failed to send email",
+    });
+  }
+};
+
 module.exports = {
   signup,
   login,
   generateAccessToken,
+  forgotPassword,
 };
