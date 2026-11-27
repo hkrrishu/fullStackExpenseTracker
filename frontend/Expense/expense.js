@@ -183,3 +183,9 @@ showLeaderboardBtn.addEventListener("click", async () => {
     alert("Unable to fetch leaderboard");
   }
 });
+
+const reportBtn = document.getElementById("reportBtn");
+
+reportBtn.addEventListener("click", () => {
+  window.location.href = "../Report/report.html";
+});
