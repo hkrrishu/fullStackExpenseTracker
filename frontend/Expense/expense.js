@@ -1,4 +1,6 @@
 const expenseForm = document.getElementById("expenseForm");
+let currentPage = 1;
+let totalPages = 1;
 
 expenseForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -28,26 +30,27 @@ expenseForm.addEventListener("submit", (event) => {
     });
 });
 
-function getExpenses() {
+function getExpenses(page = 1) {
   axios
-    .get("http://localhost:3000/expense/getexpenses", {
-      headers: {
-        Authorization: localStorage.getItem("token"),
-      },
+    .get(`http://localhost:3000/expense/getexpenses?page=${page}`, {
+      headers: { Authorization: localStorage.getItem("token") },
     })
     .then((response) => {
       const expenseList = document.getElementById("expenseList");
       expenseList.innerHTML = "";
 
+      currentPage = response.data.currentPage;
+      totalPages = response.data.totalPages;
+
+      // Display expenses
       response.data.expenses.forEach((expense) => {
         const li = document.createElement("li");
-
         li.textContent = `${expense.expenseamount} - ${expense.description} - ${expense.category}`;
 
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Delete";
-
         li.appendChild(deleteBtn);
+
         deleteBtn.addEventListener("click", () => {
           axios
             .delete(
@@ -58,21 +61,50 @@ function getExpenses() {
                 },
               },
             )
-            .then((response) => {
-              getExpenses();
+            .then(() => {
+              getExpenses(currentPage);
             })
-            .catch((err) => {
-              console.log(err);
-            });
+            .catch((err) => console.log(err));
         });
 
         expenseList.appendChild(li);
       });
+
+      // Create pagination buttons
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+
+      if (currentPage > 1) {
+        const previousBtn = document.createElement("button");
+        previousBtn.textContent = "Previous";
+        previousBtn.addEventListener("click", () => {
+          getExpenses(currentPage - 1);
+        });
+        pagination.appendChild(previousBtn);
+      }
+
+      const currentBtn = document.createElement("button");
+      currentBtn.textContent = currentPage;
+      pagination.appendChild(currentBtn);
+
+      if (currentPage < totalPages) {
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next";
+        nextBtn.addEventListener("click", () => {
+          getExpenses(currentPage + 1);
+        });
+        pagination.appendChild(nextBtn);
+      }
+
+      const pageInfo = document.createElement("span");
+      pageInfo.textContent = ` Page ${currentPage} of ${totalPages} `;
+      pagination.appendChild(pageInfo);
     })
     .catch((err) => {
       console.log(err);
     });
 }
+
 getExpenses();
 
 // Initialize Cashfree
