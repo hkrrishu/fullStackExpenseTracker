@@ -1,6 +1,32 @@
 const expenseForm = document.getElementById("expenseForm");
+
 let currentPage = 1;
 let totalPages = 1;
+let totalExpenses = 0;
+
+const itemsPerPageSelect = document.getElementById("itemsPerPage");
+
+// Allowed page sizes
+const allowedPageSizes = [10, 25, 50, 100];
+
+// Get saved preference
+let savedPageSize = Number(localStorage.getItem("itemsPerPage"));
+
+let itemsPerPage = allowedPageSizes.includes(savedPageSize)
+  ? savedPageSize
+  : 10;
+
+// Show saved preference in dropdown
+itemsPerPageSelect.value = itemsPerPage;
+
+// Save preference when user changes dropdown
+itemsPerPageSelect.addEventListener("change", () => {
+  itemsPerPage = Number(itemsPerPageSelect.value);
+
+  localStorage.setItem("itemsPerPage", itemsPerPage);
+
+  getExpenses(1);
+});
 
 expenseForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -32,23 +58,31 @@ expenseForm.addEventListener("submit", (event) => {
 
 function getExpenses(page = 1) {
   axios
-    .get(`http://localhost:3000/expense/getexpenses?page=${page}`, {
-      headers: { Authorization: localStorage.getItem("token") },
-    })
+    .get(
+      `http://localhost:3000/expense/getexpenses?page=${page}&limit=${itemsPerPage}`,
+      {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      },
+    )
     .then((response) => {
       const expenseList = document.getElementById("expenseList");
       expenseList.innerHTML = "";
 
       currentPage = response.data.currentPage;
       totalPages = response.data.totalPages;
+      totalExpenses = response.data.totalExpenses;
 
       // Display expenses
       response.data.expenses.forEach((expense) => {
         const li = document.createElement("li");
+
         li.textContent = `${expense.expenseamount} - ${expense.description} - ${expense.category}`;
 
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Delete";
+
         li.appendChild(deleteBtn);
 
         deleteBtn.addEventListener("click", () => {
@@ -70,35 +104,42 @@ function getExpenses(page = 1) {
         expenseList.appendChild(li);
       });
 
-      // Create pagination buttons
+      // Create pagination
       const pagination = document.getElementById("pagination");
       pagination.innerHTML = "";
 
-      if (currentPage > 1) {
-        const previousBtn = document.createElement("button");
-        previousBtn.textContent = "Previous";
-        previousBtn.addEventListener("click", () => {
-          getExpenses(currentPage - 1);
-        });
-        pagination.appendChild(previousBtn);
-      }
+      const start =
+        totalExpenses === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
 
-      const currentBtn = document.createElement("button");
-      currentBtn.textContent = currentPage;
-      pagination.appendChild(currentBtn);
+      const end = Math.min(currentPage * itemsPerPage, totalExpenses);
 
-      if (currentPage < totalPages) {
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = "Next";
-        nextBtn.addEventListener("click", () => {
-          getExpenses(currentPage + 1);
-        });
-        pagination.appendChild(nextBtn);
-      }
+      // Previous button
+      const previousBtn = document.createElement("button");
+      previousBtn.textContent = "❮";
+      previousBtn.disabled = currentPage === 1;
 
+      previousBtn.addEventListener("click", () => {
+        getExpenses(currentPage - 1);
+      });
+
+      pagination.appendChild(previousBtn);
+
+      // Record range
       const pageInfo = document.createElement("span");
-      pageInfo.textContent = ` Page ${currentPage} of ${totalPages} `;
+      pageInfo.textContent = ` ${start}-${end} of ${totalExpenses} `;
+
       pagination.appendChild(pageInfo);
+
+      // Next button
+      const nextBtn = document.createElement("button");
+      nextBtn.textContent = "❯";
+      nextBtn.disabled = currentPage === totalPages;
+
+      nextBtn.addEventListener("click", () => {
+        getExpenses(currentPage + 1);
+      });
+
+      pagination.appendChild(nextBtn);
     })
     .catch((err) => {
       console.log(err);

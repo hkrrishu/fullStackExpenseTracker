@@ -48,25 +48,50 @@ const addExpense = async (req, res) => {
 
 const getExpenses = async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = 10;
+    const requestedPage = Number(req.query.page);
 
-    const offset = (page - 1) * limit;
+    const page =
+      Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-    const { count, rows: expenses } = await Expense.findAndCountAll({
-      where: {
-        userId: req.user.id,
-      },
-      limit: limit,
-      offset: offset,
+    // Available page sizes
+    const allowedPageSizes = [10, 25, 50, 100];
+
+    const requestedLimit = Number(req.query.limit);
+
+    const limit = allowedPageSizes.includes(requestedLimit)
+      ? requestedLimit
+      : 10;
+
+    const where = {
+      userId: req.user.id,
+    };
+
+    // Count all expenses
+    const count = await Expense.count({ where });
+
+    const totalPages = Math.max(1, Math.ceil(count / limit));
+
+    // Handle invalid page numbers
+    const currentPage = Math.min(page, totalPages);
+
+    const offset = (currentPage - 1) * limit;
+
+    // Fetch expenses
+    const expenses = await Expense.findAll({
+      where,
+      limit,
+      offset,
       order: [["id", "DESC"]],
     });
 
     res.status(200).json({
-      expenses: expenses,
-      currentPage: page,
-      totalPages: Math.max(1, Math.ceil(count / limit)),
+      expenses,
+      currentPage,
+      totalPages,
       totalExpenses: count,
+      limit,
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
       success: true,
     });
   } catch (err) {
