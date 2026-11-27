@@ -1,6 +1,7 @@
 const Expense = require("../models/expenseTable");
 const User = require("../models/userTable");
 const sequelize = require("../util/database");
+const { suggestCategory } = require("../services/geminiService");
 
 const addExpense = async (req, res) => {
   const transaction = await sequelize.transaction();
@@ -8,7 +9,9 @@ const addExpense = async (req, res) => {
   try {
     const expenseamount = Number(req.body.expenseamount);
     const description = req.body.description;
-    const category = req.body.category;
+
+    // Ask Gemini to suggest the category
+    const category = await suggestCategory(description);
 
     const expense = await Expense.create(
       {
@@ -34,7 +37,7 @@ const addExpense = async (req, res) => {
   } catch (err) {
     await transaction.rollback();
     console.log(err);
-    res.status(500).json({ success: false, error: err });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -93,7 +96,7 @@ const deleteExpense = async (req, res) => {
   } catch (err) {
     await transaction.rollback();
     console.log(err);
-    res.status(500).json({ success: false, error: err });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 

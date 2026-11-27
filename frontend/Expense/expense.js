@@ -5,12 +5,10 @@ expenseForm.addEventListener("submit", (event) => {
 
   const expenseamount = document.getElementById("expenseamount").value;
   const description = document.getElementById("description").value;
-  const category = document.getElementById("category").value;
 
   const expenseDetails = {
     expenseamount,
-    description,
-    category,
+    description
   };
 
   axios
